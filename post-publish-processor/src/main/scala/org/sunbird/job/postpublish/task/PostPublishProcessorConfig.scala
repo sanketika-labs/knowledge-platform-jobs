@@ -97,6 +97,9 @@ class PostPublishProcessorConfig(override val config: Config) extends BaseJobCon
   // Activity Batch Creation Configuration
   val activityBatchCreationEnabled: Boolean = if (config.hasPath("activity.batch.creation.enabled")) config.getBoolean("activity.batch.creation.enabled") else false
 
+  // Dial Code Configuration
+  val dialCodeEnabled: Boolean = if (config.hasPath("dialcode.enabled")) config.getBoolean("dialcode.enabled") else false
+
   // Timezone Configuration
   val timezone: String = if (config.hasPath("job.timezone")) config.getString("job.timezone") else "Asia/Kolkata"
 
