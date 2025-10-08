@@ -55,16 +55,21 @@ class PostPublishEventRouter(config: PostPublishProcessorConfig, httpUtil: HttpU
           context.output(config.activityBatchCreateOutTag, activityBatchDetails)
       }
 
-      // Process Dialcode link
-      val dialCodeDetails = getDialCodeDetails(identifier, event)(neo4JUtil, config)
-      if (!dialCodeDetails.isEmpty)
-        context.output(config.linkDIALCodeOutTag, dialCodeDetails)
+      // Process Dialcode link (only if enabled)
+      if (config.dialCodeEnabled) {
+        val dialCodeDetails = getDialCodeDetails(identifier, event)(neo4JUtil, config)
+        if (!dialCodeDetails.isEmpty)
+          context.output(config.linkDIALCodeOutTag, dialCodeDetails)
+      }
 
-      val dialcodeContextMap = getDialCodeContextMap(event)
-      if(!dialcodeContextMap.isEmpty)
-        context.output(config.dialcodeContextOutTag, dialcodeContextMap)
+      // Process Dialcode context (only if enabled)
+      if (config.dialCodeEnabled) {
+        val dialcodeContextMap = getDialCodeContextMap(event)
+        if(!dialcodeContextMap.isEmpty)
+          context.output(config.dialcodeContextOutTag, dialcodeContextMap)
+      }
     }
-    else if (event.action.equals("post-publish-process") && event.eData.contains("addContextDialCodes") && event.eData.contains("removeContextDialCodes")) {
+    else if (config.dialCodeEnabled && event.action.equals("post-publish-process") && event.eData.contains("addContextDialCodes") && event.eData.contains("removeContextDialCodes")) {
       val dialcodeContextMap = getDialCodeContextMap(event)
       if(!dialcodeContextMap.isEmpty)
         context.output(config.dialcodeContextOutTag, dialcodeContextMap)
