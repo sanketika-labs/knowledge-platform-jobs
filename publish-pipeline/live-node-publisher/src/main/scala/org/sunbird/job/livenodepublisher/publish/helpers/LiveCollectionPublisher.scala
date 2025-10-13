@@ -481,8 +481,18 @@ trait LiveCollectionPublisher extends LiveObjectReader with SyncMessagesGenerato
     if (children.nonEmpty) {
       children.map(child => {
         if (StringUtils.equalsIgnoreCase("Parent", child.getOrElse("visibility", "").asInstanceOf[String])) { //set child metadata -- compatibilityLevel, appIcon, posterImage, lastPublishedOn, pkgVersion, status
-          val updatedChild = populatePublishMetadata(child, objMetadata)
-          updatedChild + ("children" -> updateHierarchyMetadata(updatedChild.getOrElse("children", List.empty).asInstanceOf[List[Map[String, AnyRef]]], objMetadata, collRelationalMetadata))
+          // Check if parent primaryCategory is "Competency Framework" and child primaryCategory is "Competency Level"
+          val parentPrimaryCategory = objMetadata.getOrElse("primaryCategory", "").asInstanceOf[String]
+          val childPrimaryCategory = child.getOrElse("primaryCategory", "").asInstanceOf[String]
+          
+          if (StringUtils.equalsIgnoreCase("Competency Framework", parentPrimaryCategory) && 
+              StringUtils.equalsIgnoreCase("Competency Level", childPrimaryCategory)) {
+            // Skip child validation/processing - return child as-is with children recursively processed
+            child + ("children" -> updateHierarchyMetadata(child.getOrElse("children", List.empty).asInstanceOf[List[Map[String, AnyRef]]], objMetadata, collRelationalMetadata))
+          } else {
+            val updatedChild = populatePublishMetadata(child, objMetadata)
+            updatedChild + ("children" -> updateHierarchyMetadata(updatedChild.getOrElse("children", List.empty).asInstanceOf[List[Map[String, AnyRef]]], objMetadata, collRelationalMetadata))
+          }
         } else {
           //TODO: Populate relationalMetadata here for child contents
           if (collRelationalMetadata.nonEmpty) {
